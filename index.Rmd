@@ -2,6 +2,7 @@
 title: "Energie"
 output: 
   flexdashboard::flex_dashboard:
+    theme: journal
     source_code: embed 
 ---
 
@@ -12,6 +13,7 @@ library(tidyverse)
 library(plotly)
 library(leaflet)
 library(sf)
+library(tmap)
 
 ```
 
@@ -43,5 +45,28 @@ Windenergie
 ### Karte des Windenergiepotentials und der bereits erstellten Windenergieanlagen
 
 ```{r}
+windpot <- terra::rast("data/rastermap_v200605_einfarbig.tif") %>% terra::project("epsg:4326")
+windanl <- read_sf("data/Windenergyplants.gpkg") %>% st_transform(4326)
+
+
+leaflet(windanl) %>% 
+  addCircleMarkers(fill = T,
+                   color = "darkturquoise",
+                   radius = 2,
+                   opacity = 1) %>% 
+  addTiles() %>% 
+  addRasterImage(windpot %>% as(., "Raster"), 
+                 colors = "darkturquoise", 
+                 opacity = 0.3)
+
+
+# tmap_mode("view")
+# tm_shape(windpot) + 
+#     tm_raster(col = "rastermap_v200605_einfarbig",
+#               legend.show = F,
+#               palette = "blue",
+#               alpha = 0.2) +
+#   tm_shape(windanl) +
+#     tm_dots()
 
 ```
