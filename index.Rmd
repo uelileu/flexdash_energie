@@ -3,7 +3,7 @@ title: "Energie"
 output: 
   flexdashboard::flex_dashboard:
     theme: 
-      navbar-bg: "#3ADAC6"
+      navbar-bg: "#da6d3a"
     source_code: embed 
 ---
 
@@ -30,15 +30,22 @@ biog <- read_sf("data/BiogasPlants.gpkg", layer="BiogasPlant") %>%
   
 leaflet(biog) %>% 
   addTiles(attribution = "Quelle: Bundesamt für Energie") %>% 
+  addProviderTiles(providers$Stamen.TonerLite, group = "Toner Lite") %>%
   addCircleMarkers(fill = T,
-                   fillColor = "green",
-                   color = "green", 
-                   radius = ifelse(!is.na(biog$CombinedHeatAndPower),biog$CombinedHeatAndPower %>% sqrt() / 7,1),
-                   #fillOpacity = 0.1,
-                   fillOpacity = 0.8,
+                   fillColor = "brown",
+                   #opacity = 0.8,
+                   fillOpacity = 0.7,
+                   color = NA, 
+                   group = "Biogas",
+                   radius = ifelse(!is.na(biog$CombinedHeatAndPower),
+                                   biog$CombinedHeatAndPower %>% log() %>% sqrt() * 2,1),
                    popup = paste0("<b>Betreiber: </b>", biog$Name,"<br>",
                                   "<b>In Betrieb seit: </b>", biog$BeginningOfOperation, "<br>",
-                                  "<b>Leistung kombiniert: </b>", round(biog$CombinedHeatAndPower,1), " kW"))
+                                  "<b>Leistung kombiniert: </b>", round(biog$CombinedHeatAndPower,1), " kW")) %>% 
+  addLayersControl(
+    baseGroups = c("OSM (default)", "Toner Lite"),
+    overlayGroups = c("Biogas"),
+    options = layersControlOptions(collapsed = TRUE))
 ```
 
 Windenergie
@@ -53,16 +60,42 @@ windanl <- read_sf("data/Windenergyplants.gpkg") %>% st_transform(4326) %>%
 
 
 leaflet(windanl) %>% 
-  addCircleMarkers(fill = F,
+  addProviderTiles(providers$Stamen.TonerLite, group = "Toner Lite") %>%
+  addCircles(fill = F,
                    color = "brown",
                    radius = 2,
                    opacity = 0.8,
+                   group = "Wind",
                    popup = paste0("Hersteller: ", windanl$manufacturer,"<br>",
                                   "Gebaut im Jahr ", windanl$yearOfConstruction, "<br>",
                                   "Richtwert Leistung: ", round(windanl$ratedPower,1))) %>% 
   addTiles(attribution = "Quelle: Bundesamt für Energie") %>% 
   addRasterImage(windpot %>% as(., "Raster"), 
                  colors = "chocolate1", 
-                 opacity = 0.2)
+                 opacity = 0.3,
+                 group = "Wind") %>% 
+  addLegend(title = "Windpotential",
+            colors = c("brown", NA),
+            labels = c("vorhanden", "nicht vorhanden")) %>% 
+  addLayersControl(
+    baseGroups = c("OSM (default)", "Toner Lite"),
+    overlayGroups = c("Wind"),
+    options = layersControlOptions(collapsed = TRUE))
 
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+hush pretty baby dont u cry
