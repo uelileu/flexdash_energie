@@ -46,27 +46,21 @@ Windenergie
 
 ```{r}
 windpot <- terra::rast("data/rastermap_v200605_einfarbig.tif") %>% terra::project("epsg:4326")
-windanl <- read_sf("data/Windenergyplants.gpkg") %>% st_transform(4326)
+windanl <- read_sf("data/Windenergyplants.gpkg") %>% st_transform(4326) %>% 
+  dplyr::filter(is.na(yearOfDismantling))
 
 
 leaflet(windanl) %>% 
-  addCircleMarkers(fill = T,
-                   color = "darkturquoise",
-                   radius = 2,
-                   opacity = 1) %>% 
-  addTiles() %>% 
+  addCircleMarkers(fill = F,
+                   color = "brown",
+                   radius = 1.5,
+                   opacity = 0.8,
+                   popup = paste0("Hersteller: ", windanl$manufacturer,"<br>",
+                                  "Gebaut im Jahr ", windanl$yearOfConstruction, "<br>",
+                                  "Richtwert Leistung: ", round(windanl$ratedPower,1))) %>% 
+  addTiles(attribution = "Quelle: Bundesamt für Energie") %>% 
   addRasterImage(windpot %>% as(., "Raster"), 
-                 colors = "darkturquoise", 
-                 opacity = 0.3)
-
-
-# tmap_mode("view")
-# tm_shape(windpot) + 
-#     tm_raster(col = "rastermap_v200605_einfarbig",
-#               legend.show = F,
-#               palette = "blue",
-#               alpha = 0.2) +
-#   tm_shape(windanl) +
-#     tm_dots()
+                 colors = "chocolate1", 
+                 opacity = 0.2)
 
 ```
